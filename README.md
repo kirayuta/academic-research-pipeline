@@ -207,6 +207,18 @@ Remove-Item "_temp" -Recurse -Force
 
 #### 9 步流程
 
+```mermaid
+flowchart TD
+    A["Step 0: 预处理\n原稿 → 分块 + 验证器"] --> D
+    A -.->|"从主题生成时"| B["Step 1-2: 生成草稿\n+ 自我改进"]
+    B --> D["Step 3: 逐块审稿\n5 角色 × 动态轮数"]
+    D --> E["Step 4: 质量门\n声明审计 + 风险评分"]
+    E --> F["Step 5: 重组\n+ 一致性检查"]
+    F --> G["Step 6: 图文对齐"]
+    G --> H["Step 7: 对抗审稿\nReviewer #3 模拟"]
+    H --> I["Step 8: Cover Letter\n+ 意义声明"]
+```
+
 | 步骤 | 做什么 | 人话翻译 |
 |------|--------|----------|
 | **Step 0** | 预处理 + 分块 | 把原稿拆成 5 个章节块 + 生成检查矩阵 |
@@ -234,7 +246,17 @@ Remove-Item "_temp" -Recurse -Force
 你: [粘贴题目]
 ```
 
-AI 求解 → 自我检验 → IMO 评委验证 → 修正 → 循环直到连续 5 次无错通过。
+```mermaid
+flowchart TD
+    A["Step 1: 专家求解"] --> B["Step 2: 自我改进"]
+    B --> C["Step 3: IMO 评委验证"]
+    C --> D["Step 4: 审查验证"]
+    D --> E["Step 5: 修正"]
+    E --> F{"Step 6: 通过？"}
+    F -->|"连续 5 次无 Critical Error"| G["✅ final_solution.md"]
+    F -->|"有 Critical Error"| C
+    F -->|"连续 10 次失败"| H["❌ 输出最佳尝试"]
+```
 
 ---
 
