@@ -26,8 +26,37 @@
 | **中文 Skill 清单** | 检查清单用中文写成，消除语言隔阂，教授和学生可直接审阅和修改 |
 | **六层编辑法** | Editor skill 按逻辑→结构→段落→句子→词语→格式递进，不会混淆层次 |
 | **假设压力测试** | Interviewer skill 内置 Devil's Advocate + Hypothesis Stress Test，模拟答辩质询 |
-| **Token 预算管理** | 分块 + revision_history 滚动压缩 + frozen 锁定，长论文不会撑爆上下文 |
 | **模型无关** | 纯 Markdown 架构，不依赖特定模型版本。Gemini 升级 → 输出自动变好 |
+
+### 为什么数据预处理（洗数据）是必须的
+
+Antigravity 背后的模型有**硬性 token 上限**：
+
+| 模型 | 输入上限 | 输出上限 |
+|------|---------|---------|
+| Gemini 2.5 Pro | ~1M tokens | ~64K tokens |
+| Claude Opus | ~200K tokens | ~32K tokens |
+
+看似很大，但一次审稿需要输入的内容包括：
+
+```
+chunk 原文 (~4,000) + 上下文摘要 (~500) + revision_history (~3,000)
++ skill 清单 (~1,000) + claim_evidence_matrix (~500) = ~9,000 tokens/轮
+
+× 5 轮/chunk × 5 chunks = ~225,000 tokens 总消耗
+```
+
+如果不分块、不压缩、不锁定——一篇 8000 字论文 + 多轮审稿历史会**直接撑爆上下文**，导致 AI 丢失前面的审稿意见或产生幻觉。
+
+所以 **预处理不是"可选优化"，而是架构的地基**：
+
+| 机制 | 解决什么 |
+|------|----------|
+| **Manuscript Preprocessor** | 原稿清洗：去页眉页脚、统一格式、提取元数据，减少噪声 token |
+| **分块 (≤4K tokens)** | 每次只给 AI 一个章节，注意力不被稀释 |
+| **Frozen 锁定** | Methods / References / SI 不参与审稿循环，节省大量 token |
+| **Revision History 滚动压缩** | 第 7 轮起，早期审稿记录压缩为 1 行摘要（R3 永不压缩），总量控制在 ~3K tokens |
+| **Context Header** | 每个 chunk 附带其他章节的摘要（而非全文），保持跨章节一致性的同时控制输入量 |
 
 ### 自定义
 
