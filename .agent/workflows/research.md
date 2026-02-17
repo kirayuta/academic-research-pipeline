@@ -564,3 +564,14 @@ When complete:
 8. `cover_letter_draft.md` — with Significance Statement, reviewer suggestions from conflict matrix
 9. `reference_audit.md` — coverage gaps, recency analysis, self-citation ratio
 10. `reviewer_conflict_matrix.md` — suggested/excluded/uncited-but-relevant reviewers
+
+// turbo
+## Completion Notification
+
+When ALL steps above are finished, run this command to alert the user:
+
+```powershell
+[console]::beep(800,300); Start-Sleep -Milliseconds 200; [console]::beep(1000,300); Start-Sleep -Milliseconds 200; [console]::beep(1200,500)
+```
+
+Then tell the user: **"✅ 审稿流程已完成。请先查看 `author_queries.md`。"**
