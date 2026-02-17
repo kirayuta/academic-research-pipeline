@@ -6,11 +6,11 @@
 
 ## 前提
 
-- **VS Code** + **Gemini Code Assist**（即 Antigravity）已安装
-- 打开一个**项目文件夹**作为 VS Code 工作区
+- 已安装 [**Antigravity**](https://blog.google/technology/google-deepmind/gemini-model-policy-updates-january-2025/)（Google DeepMind 的 AI 编程助手）
+- 用 Antigravity 打开一个**项目文件夹**
 
 > [!NOTE]
-> Antigravity 是 Google DeepMind 的 AI 编程助手，内置在 VS Code 中。本工具包通过 workflow 和 skill 文件扩展它的能力，使其能执行学术论文审稿流程。
+> 本工具包通过 workflow 和 skill 文件扩展 Antigravity 的能力，使其能执行完整的学术论文审稿流程。无需编程基础。
 
 ---
 
