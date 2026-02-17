@@ -75,43 +75,51 @@
 
 ## 部署到你的项目
 
-> [!IMPORTANT]
-> 需要复制 **2 样东西**：`.agent/workflows/` + `skills/`。缺一不可。
-
-### 方法一：PowerShell 一键复制
+### 方法一：`git clone`（推荐）
 
 ```powershell
-# ✏️ 修改这两个路径
-$src = "G:\My Drive\2026\IMOtest"
-$dst = "D:\YourNewProject"
+# 1. Clone 到你的项目文件夹
+git clone https://github.com/kirayuta/academic-research-pipeline.git my-paper-review
 
-# 复制 workflows
-New-Item -ItemType Directory -Path "$dst\.agent\workflows" -Force
-Copy-Item "$src\.agent\workflows\*" "$dst\.agent\workflows\" -Recurse
-
-# 复制 skills
-Copy-Item "$src\skills" "$dst\skills" -Recurse -Force
+# 2. 把你的稿件放进去
+copy my_paper.txt my-paper-review\
 ```
 
-### 方法二：手动复制
+Clone 下来的目录结构已经是完整的，直接用 VS Code 打开 → Antigravity 对话 → `/research`。
 
-1. 打开源项目文件夹，找到 `.agent\workflows\` ⚠️（隐藏文件夹，需在资源管理器 → 查看 → 勾选"隐藏的项目"）
-2. 复制 `.agent\` 文件夹到目标项目根目录
-3. 复制 `skills\` 文件夹到目标项目根目录
-4. 把你的稿件放进去
+### 方法二：添加到已有项目
+
+如果你已有一个项目文件夹，只需把 workflow 和 skills 复制进去：
+
+```powershell
+# ✏️ 修改为你的项目路径
+$dst = "D:\YourExistingProject"
+
+# Clone 临时副本，然后提取需要的部分
+git clone https://github.com/kirayuta/academic-research-pipeline.git _temp_pipeline
+
+# 复制 workflows + skills
+New-Item -ItemType Directory -Path "$dst\.agent\workflows" -Force
+Copy-Item "_temp_pipeline\.agent\workflows\*" "$dst\.agent\workflows\" -Recurse
+Copy-Item "_temp_pipeline\skills" "$dst\skills" -Recurse -Force
+
+# 清理临时文件
+Remove-Item "_temp_pipeline" -Recurse -Force
+```
 
 ### 验证
 
-```powershell
-# 检查文件是否到位
-Get-ChildItem "$dst\.agent\workflows"   # 应看到 research.md, imo.md
-Get-ChildItem "$dst\skills" -Directory  # 应看到 11 个文件夹
+```
+你的项目/
+├── .agent/workflows/        ← ✅ 应有 research.md, imo.md
+├── skills/                   ← ✅ 应有 11 个子文件夹
+└── your_manuscript.txt       ← 你的稿件
 ```
 
-部署完成后，在 VS Code 打开目标项目 → 新建 Antigravity 对话 → 输入 `/research` → 开始！
+VS Code 打开项目 → 新建 Antigravity 对话 → 输入 `/research` → 如果 AI 开始执行流程，部署成功！
 
-> [!CAUTION]
-> **不要复制** `temp_skills_repo/`、`__pycache__/`、`New folder*/`——它们是运行时产生的临时文件，不属于工具包。
+> [!NOTE]
+> `.agent` 是隐藏文件夹，在 Windows 资源管理器中需要开启"显示隐藏的项目"才能看到。
 
 ---
 
