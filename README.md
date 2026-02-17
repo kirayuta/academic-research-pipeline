@@ -1,125 +1,122 @@
 # 🔬 Academic Research AI Pipeline
 
-> 把 Antigravity 变成你的**论文审稿导师 + 数值审计员 + 魔鬼代言人**——一键启动完整多轮迭代审稿流程。
+> 把 [Gemini Antigravity](https://blog.google/technology/google-deepmind/gemini-model-policy-updates-january-2025/) 变成你的**论文审稿导师 + 数值审计员 + 魔鬼代言人**——一键启动完整多轮迭代审稿流程。
 
 ---
 
-## 目录
+## 前提
 
-- [30 秒上手](#30-秒上手)
-- [工作原理](#工作原理)
-- [部署到你的项目](#部署到你的项目)
-- [/research — 论文审稿](#research--论文审稿)
-- [/imo — 数学竞赛求解](#imo--数学竞赛求解)
-- [Skills 技能模块](#skills-技能模块)
-- [输出文件速查](#输出文件速查)
-- [高级用法](#高级用法)
-- [FAQ](#faq)
+- **VS Code** + **Gemini Code Assist**（即 Antigravity）已安装
+- 打开一个**项目文件夹**作为 VS Code 工作区
+
+> [!NOTE]
+> Antigravity 是 Google DeepMind 的 AI 编程助手，内置在 VS Code 中。本工具包通过 workflow 和 skill 文件扩展它的能力，使其能执行学术论文审稿流程。
+
+---
+
+## 部署
+
+### 方法一：`git clone` 新建项目（推荐）
+
+```bash
+# 1. Clone 仓库作为你的工作目录
+git clone https://github.com/kirayuta/academic-research-pipeline.git my-paper-review
+cd my-paper-review
+
+# 2. 把你的稿件（.txt）放进来
+# Windows:
+copy "C:\path\to\my_paper.txt" .
+# Mac/Linux:
+# cp ~/path/to/my_paper.txt .
+
+# 3. 用 VS Code 打开
+code .
+```
+
+在 Antigravity 对话中输入 `/research`，流程自动启动。
+
+### 方法二：添加到已有项目
+
+```bash
+# 1. Clone 到临时目录
+git clone https://github.com/kirayuta/academic-research-pipeline.git _temp
+
+# 2. 复制到你的项目（Windows PowerShell）
+$dst = "D:\YourProject"                                         # ← 改成你的路径
+New-Item -ItemType Directory -Path "$dst\.agent\workflows" -Force | Out-Null
+Copy-Item "_temp\.agent\workflows\*" "$dst\.agent\workflows\" -Recurse
+Copy-Item "_temp\skills" "$dst\skills" -Recurse -Force
+Copy-Item "_temp\README.md" "$dst\README.md" -Force             # 可选
+
+# 3. 清理
+Remove-Item "_temp" -Recurse -Force
+```
+
+### 验证部署
+
+检查你的项目文件夹结构是否如下：
+
+```
+你的项目/
+├── .agent/
+│   └── workflows/
+│       ├── research.md    ✅
+│       └── imo.md         ✅
+├── skills/
+│   ├── academic-analyst/     ✅ (共 11 个子文件夹)
+│   ├── academic-editor/      ✅
+│   ├── academic-interviewer/ ✅
+│   ├── academic-reviewer/    ✅
+│   ├── academic-writer/      ✅
+│   ├── manuscript-preprocessor/ ✅
+│   ├── super-analyst/        ✅
+│   ├── super-editor/         ✅
+│   ├── super-fact-checker/   ✅
+│   ├── super-interviewer/    ✅
+│   └── super-writer/         ✅
+└── your_manuscript.txt       ← 你的稿件
+```
+
+> [!IMPORTANT]
+> `.agent` 是隐藏文件夹。Windows 资源管理器中需开启 **查看 → 显示 → 隐藏的项目** 才可见。
 
 ---
 
 ## 30 秒上手
 
-**你已经有 Antigravity 了，只需 3 步：**
+部署完成后，3 步开始审稿：
 
 ```
-1️⃣  把稿件（.txt）放到项目文件夹下
-2️⃣  在 Antigravity 对话框输入：/research
-3️⃣  等着收结果（全自动，不用额外指令）
+1️⃣  将稿件（.txt）放到项目文件夹下
+2️⃣  VS Code 打开项目 → 打开 Antigravity 对话框
+3️⃣  输入 /research → 全自动执行，不用额外指令
 ```
 
 > [!TIP]
-> `/research` 是斜杠命令，Antigravity 会自动读取 workflow 文件并逐步执行。你只需提供稿件，不需要手动指引 AI 每一步做什么。
+> `/research` 是 Antigravity 的斜杠命令。AI 会自动读取 workflow 文件并按 9 步流程执行——你只需提供稿件，不用手动指引每一步。
 
 ---
 
 ## 工作原理
 
-这套系统由 **2 层** 组成：
+本工具包由 **2 层** 组成：
 
-```
-你的项目/
-├── .agent/workflows/        ← 🔗 工作流（定义"做什么"）
-│   ├── research.md           ← 论文审稿 9 步流水线 v5.3
-│   └── imo.md                ← 数学竞赛 6 步求解器
-│
-├── skills/                   ← 🧠 技能模块（定义"怎么做"）
-│   ├── manuscript-preprocessor/  ← 原稿 → 分块
-│   ├── academic-reviewer/        ← 导师审稿（物理+写作）
-│   ├── academic-interviewer/     ← 魔鬼代言人
-│   ├── academic-analyst/         ← 数值/统计审计
-│   ├── academic-editor/          ← Nature 级润色
-│   ├── academic-writer/          ← 学术写作
-│   ├── super-analyst/            ← 系统分析
-│   ├── super-editor/             ← 高级编辑
-│   ├── super-fact-checker/       ← 事实核查
-│   ├── super-interviewer/        ← 深度质询
-│   └── super-writer/             ← 高级写作
-│
-└── my_paper.txt              ← 你的稿件
-```
+| 层 | 位置 | 作用 |
+|----|------|------|
+| **Workflow** | `.agent/workflows/*.md` | 定义 AI 执行的完整步骤流程（"做什么"） |
+| **Skill** | `skills/*/SKILL.md` | 定义 AI 在每步中的角色、检查清单、输出格式（"怎么做"） |
 
-**Workflow** 告诉 AI 执行流程（先分块 → 再审稿 → 再重组...）；**Skill** 告诉 AI 在每个步骤中扮演什么角色、用什么检查清单。输入 `/research` 后，一切自动串联。
+输入 `/research` 后，Antigravity 读取 workflow → 在每个步骤中调用对应的 skill → 一切自动串联。
 
-### 核心概念速查
+### 核心术语
 
 | 术语 | 含义 |
 |------|------|
 | **Chunk** | 论文被拆成 ≤4000 token 的小块（A=摘要, B=引言, C/D=结果, E=讨论），逐块审稿 |
-| **Frozen** | 锁定不审的章节（Methods, References），放在 `frozen/` 目录 |
+| **Frozen** | 不参与审稿的章节（Methods, References），锁定在 `frozen/` 目录 |
 | **P0 / P1 / P2** | 问题优先级：P0 必须改 · P1 强烈建议改 · P2 建议改 |
 | **AQ-N** | Author Query #N，需要作者确认的问题，汇总在 `author_queries.md` |
-| **R1–R5** | 5 种审稿角色轮换（导师 → 修改 → 魔鬼代言人 → 数值审计 → 终审） |
-
----
-
-## 部署到你的项目
-
-### 方法一：`git clone`（推荐）
-
-```powershell
-# 1. Clone 到你的项目文件夹
-git clone https://github.com/kirayuta/academic-research-pipeline.git my-paper-review
-
-# 2. 把你的稿件放进去
-copy my_paper.txt my-paper-review\
-```
-
-Clone 下来的目录结构已经是完整的，直接用 VS Code 打开 → Antigravity 对话 → `/research`。
-
-### 方法二：添加到已有项目
-
-如果你已有一个项目文件夹，只需把 workflow 和 skills 复制进去：
-
-```powershell
-# ✏️ 修改为你的项目路径
-$dst = "D:\YourExistingProject"
-
-# Clone 临时副本，然后提取需要的部分
-git clone https://github.com/kirayuta/academic-research-pipeline.git _temp_pipeline
-
-# 复制 workflows + skills
-New-Item -ItemType Directory -Path "$dst\.agent\workflows" -Force
-Copy-Item "_temp_pipeline\.agent\workflows\*" "$dst\.agent\workflows\" -Recurse
-Copy-Item "_temp_pipeline\skills" "$dst\skills" -Recurse -Force
-
-# 清理临时文件
-Remove-Item "_temp_pipeline" -Recurse -Force
-```
-
-### 验证
-
-```
-你的项目/
-├── .agent/workflows/        ← ✅ 应有 research.md, imo.md
-├── skills/                   ← ✅ 应有 11 个子文件夹
-└── your_manuscript.txt       ← 你的稿件
-```
-
-VS Code 打开项目 → 新建 Antigravity 对话 → 输入 `/research` → 如果 AI 开始执行流程，部署成功！
-
-> [!NOTE]
-> `.agent` 是隐藏文件夹，在 Windows 资源管理器中需要开启"显示隐藏的项目"才能看到。
+| **R1–R5** | 5 种审稿角色，每个 chunk 轮流审稿（见下表） |
 
 ---
 
@@ -127,50 +124,55 @@ VS Code 打开项目 → 新建 Antigravity 对话 → 输入 `/research` → �
 
 **一句话：** 把原稿变成 Nature 级终稿 + 审稿意见 + Cover Letter。
 
-### 基本用法
+### 使用
 
 ```
-# 审稿已有论文
+# 审已有论文
 你: /research
-（AI 自动找到文件夹中的稿件并开始处理）
 
 # 从主题生成论文
 你: /research
 你: 帮我写一篇关于 [主题] 的论文
 ```
 
-### 完整 9 步流程
+### 9 步流程
 
-```mermaid
-flowchart TD
-    A["Step 0: 预处理\n原稿 → 分块 + 验证器"] --> D
-    A -.->|"从主题生成时"| B["Step 1-2: 生成草稿\n+ 自我改进"]
-    B --> D["Step 3: 逐块审稿\n5 角色 × 动态轮数"]
-    D --> E["Step 4: 质量门\n声明审计 + 风险评分"]
-    E --> F["Step 5: 重组\n+ 一致性检查"]
-    F --> G["Step 6: 图文对齐"]
-    G --> H["Step 7: 对抗审稿\nReviewer #3 模拟"]
-    H --> I["Step 8: Cover Letter\n+ 意义声明"]
-```
+| 步骤 | 名称 | 做什么 |
+|------|------|--------|
+| **Step 0** | 预处理 | 原稿 → Markdown 格式化 → 拆分成 chunk A–E + frozen 目录 |
+| Step 1–2 | 生成草稿 | *仅从主题生成时*：初始写作 + 自我改进 |
+| **Step 3** | 🔁 逐块审稿 | **核心步骤**：5 种角色轮换 × 动态轮数（详见下方） |
+| **Step 4** | 质量门 | 声明-证据审计 + 风险评分 + 审稿人预测 |
+| **Step 5** | 重组 | 合并所有 chunk → 一致性检查（术语/数值/引用） |
+| Step 6 | 图文对齐 | 检查图表说明 vs 正文引用是否一致 |
+| Step 7 | 对抗审稿 | 模拟最严苛 Reviewer #3 的全面攻击 |
+| Step 8 | Cover Letter | 生成投稿信 + 意义声明 + 推荐审稿人 |
 
 ### Step 3 核心：5 种角色轮换
 
+每个 chunk 依次经过这 5 种角色的审查：
+
 | 轮次 | 角色 | 做什么 | 对应 Skill |
 |------|------|--------|-----------|
-| **R1** | 🔬✍️ 导师双轨 | 物理正确性 + 写作规范 | `academic-reviewer` |
-| **R2** | 🔄 修改验证 | R1 意见 → 结构化 diff 修改 | `academic-reviewer` |
-| **R3** | 🎭 魔鬼代言人 | 攻击假设、缺失对照、替代方法 | `academic-interviewer` |
-| **R4** | 📐 数值审计 | 公式推导、量纲、统计检验 | `academic-analyst` |
-| **R5** | 📝 终审润色 | 期刊风格、影响力、可读性 | `academic-editor` |
+| **R1** | 🔬✍️ 导师双轨 | 同时检查物理正确性 + 写作规范 | `academic-reviewer` |
+| **R2** | 🔄 修改验证 | 将 R1 意见转化为 diff 修改，检查回归 | `academic-reviewer` |
+| **R3** | 🎭 魔鬼代言人 | 攻击核心假设，查缺失对照实验 | `academic-interviewer` |
+| **R4** | 📐 数值审计 | 公式推导、量纲分析、统计检验 | `academic-analyst` |
+| **R5** | 📝 终审润色 | 期刊风格、影响力校准、可读性打分 | `academic-editor` |
 
-**自动收敛：** 每 chunk 根据复杂度算最少轮数（3-6），最多 10 轮。连续 3 轮无 P0 → 自动通过。
+**自动收敛机制：**
+- 每个 chunk 根据复杂度计算最少轮数（3–6 轮），最多 10 轮
+- 连续 3 轮无 P0 问题 → 自动通过
+- 到达上限仍有问题 → 标记为"有条件接受"，问题记入 `author_queries.md`
 
 ### 使用技巧
 
-- **稿件格式**：纯文本 `.txt` 效果最好（Word → 另存为 .txt）
-- **一篇一个文件夹**：把稿件单独放在一个干净子文件夹中
-- **最先看 `author_queries.md`**：这是你需要行动的 TODO 清单
-- **可指定期刊**：`目标期刊是 ACS Nano` → AI 自动调整审稿标准
+| 技巧 | 说明 |
+|------|------|
+| 📄 稿件格式 | 纯文本 `.txt` 效果最好（Word → 另存为 → 纯文本） |
+| 📁 一篇一目录 | 把稿件单独放在一个空子文件夹中，避免混淆 |
+| 🎯 优先看什么 | 完成后**第一个打开 `author_queries.md`**——这是你的 TODO 清单 |
+| 🏷️ 指定期刊 | 对话中说"目标期刊是 ACS Nano"→ AI 自动调整审稿标准 |
 
 ---
 
@@ -178,51 +180,50 @@ flowchart TD
 
 ```
 你: /imo
-你: [粘贴数学题]
+你: [粘贴数学题目]
 ```
 
-```mermaid
-flowchart TD
-    A["Step 1: 专家求解"] --> B["Step 2: 自我改进"]
-    B --> C["Step 3: IMO 评委验证"]
-    C --> D["Step 4: 审查验证"]
-    D --> E["Step 5: 修正"]
-    E --> F{"通过？"}
-    F -->|"5 次无 Critical Error"| G["✅ final_solution.md"]
-    F -->|"有错"| C
-    F -->|"10 次失败"| H["❌ 最佳尝试"]
-```
+| 步骤 | 做什么 |
+|------|--------|
+| Step 1 | 专家求解：生成完整证明 |
+| Step 2 | 自我改进：纠错 + 补充论证 |
+| Step 3 | IMO 评委验证：逐步检查逻辑链 |
+| Step 4 | 审查验证：过滤误报 |
+| Step 5 | 修正：回应评委发现的问题 |
+| Step 6 | 判定：连续 5 次无 Critical Error → ✅ 通过；10 次失败 → ❌ 输出最佳尝试 |
+
+Step 3–6 循环执行，直到通过或达到上限。
 
 ---
 
 ## Skills 技能模块
 
-每个 skill = 一个文件夹 + 一个 `SKILL.md`（定义角色、检查清单、输出格式）。
+每个 skill = `skills/<name>/SKILL.md`（Markdown 文件，定义角色 + 检查清单 + 输出格式）。
 
-### 被 /research 自动调用的
+### /research 自动调用的
 
-| Skill | 做什么 | 在哪步调用 |
-|-------|--------|-----------|
+| Skill | 做什么 | 在哪步 |
+|-------|--------|--------|
 | `manuscript-preprocessor` | 原稿 → Markdown 分块 | Step 0 |
-| `academic-reviewer` | 🔬✍️ 物理 + 写作双轨审稿 | Step 3 R1-R2 |
-| `academic-interviewer` | 🎭 攻击核心假设、缺失对照 | Step 3 R3 |
+| `academic-reviewer` | 🔬✍️ 物理 + 写作双轨审稿 | Step 3 R1–R2 |
+| `academic-interviewer` | 🎭 攻击假设、查缺失对照 | Step 3 R3 |
 | `academic-analyst` | 📐 公式推导、统计审计 | Step 3 R4 |
 | `academic-editor` | 📝 Nature 风格终审 | Step 3 R5 |
-| `academic-writer` | 从主题生成论文 | Step 1 |
+| `academic-writer` | 生成初始论文 | Step 1 |
 
-### 可以独立使用的
+### 可独立使用的
 
-你不需要跑完整 workflow，也可以在对话中直接引用 skill：
+不用启动完整流程，也可以在对话中直接引用：
 
 ```
-你: 用 super-fact-checker 帮我核查这段话的数据
-你: 用 academic-reviewer 的清单帮我审一下这段
+你: 用 super-fact-checker 帮我核查这段话里的数据
+你: 用 academic-reviewer 的清单帮我审一下第三段
 你: 用 super-analyst 分析一下这个问题
 ```
 
 | Skill | 做什么 |
 |-------|--------|
-| `super-analyst` | 判断复杂度 → 选框架 → 系统分析 |
+| `super-analyst` | 判断复杂度 → 选框架 → 系统化分析 |
 | `super-editor` | 高级润色 |
 | `super-fact-checker` | 事实核查 + 引用验证 |
 | `super-interviewer` | 苏格拉底式深度追问 |
@@ -232,36 +233,40 @@ flowchart TD
 
 ## 输出文件速查
 
-运行 `/research` 后生成的文件（按重要性排序）：
+运行 `/research` 完成后生成的文件：
 
-### ⭐ 必看
+### ⭐ 优先查看
+
+| 文件 | 你需要做什么 |
+|------|-------------|
+| **`author_queries.md`** | **你的 TODO 清单**——逐条确认或回答，按 P0→P2 排列 |
+| **`final_manuscript.md`** | 审稿后的终稿——搜索 `[PLACEHOLDER` 找到所有待确认处 |
+| **`cover_letter_draft.md`** | 投稿信草稿——检查推荐/排除审稿人列表 |
+
+### 📋 详细审稿记录
 
 | 文件 | 说明 |
 |------|------|
-| **`author_queries.md`** | **你的 TODO 清单**——所有需确认的问题，按 P0→P2 排列 |
-| **`final_manuscript.md`** | 多轮审稿后的终稿（含 `[PLACEHOLDER]` 标记待确认处） |
-| **`cover_letter_draft.md`** | Cover Letter + 推荐/排除审稿人 |
-
-### 📋 审稿详情
-
-| 文件 | 说明 |
-|------|------|
-| `chunk_X_review.md` | 每个 chunk 的逐轮审稿记录 |
-| `adversarial_review.md` | 模拟最严 Reviewer #3 |
+| `chunk_X_review.md` | 每个 chunk 的逐轮审稿过程 |
+| `adversarial_review.md` | Reviewer #3 模拟攻击 |
 | `quality_gate.md` | 质量门报告 + 风险评分 |
 
-### 🔍 验证矩阵
+### 🔍 质量矩阵
 
 | 文件 | 说明 |
 |------|------|
-| `claim_evidence_matrix.md` | 每个核心声明的证据类型和支撑强度 |
-| `consistency_checklist.md` | 术语、数值、引用一致性 |
+| `claim_evidence_matrix.md` | 声明 vs 证据：类型 + 支撑强度 |
+| `consistency_checklist.md` | 术语 / 数值 / 引用 一致性 |
 | `novelty_statement.md` | 提炼的创新点 |
-| `preflight_results.md` | 预检（过度声明、讨论结构、引用覆盖） |
+| `preflight_results.md` | 预检：过度声明、讨论结构、引用覆盖 |
 
 ### 📁 中间文件
 
-`draft_v1.md` · `chunk_A/B/C/D/E.md` · `frozen/`（Methods, References 等锁定章节）
+| 文件 | 说明 |
+|------|------|
+| `draft_v1.md` | 格式化后的初始稿件 |
+| `chunk_A/B/C/D/E.md` | 拆分后的章节块 |
+| `frozen/` | 锁定章节：Methods, References, SI 等 |
 
 ---
 
@@ -272,7 +277,11 @@ flowchart TD
 ```
 你: /research
 你: 只做 Step 0（预处理分块），不要开始审稿
+
+你: /research
 你: chunk 文件已经在了，从 Step 3 开始
+
+你: /research
 你: 跳过 Step 7（对抗审稿）
 ```
 
@@ -291,32 +300,69 @@ flowchart TD
 
 ### 自定义 Skill
 
-每个 `SKILL.md` 就是 Markdown 文件。你可以：
-- **改检查清单**：增删 `academic-reviewer/SKILL.md` 中的检查项
-- **建新 skill**：新建 `skills/my-skill/SKILL.md`
-- **改角色分配**：编辑 `research.md` 中的 Round-Skill 对应表
+每个 `SKILL.md` 就是 Markdown 文件，可以自由修改：
+
+- **增删检查项**：编辑 `skills/academic-reviewer/SKILL.md` 中的清单
+- **新建 skill**：创建 `skills/my-new-skill/SKILL.md`
+- **改角色分配**：编辑 `.agent/workflows/research.md` 中 R1–R5 的 Skill 对应关系
 
 ---
 
 ## FAQ
 
-**Q: 稿件格式有要求吗？**
-纯文本 `.txt` 最佳。Word 导出的也能处理，建议先去掉页眉页脚。
+<details>
+<summary><b>稿件格式有要求吗？</b></summary>
 
-**Q: 跑一次要多久？**
-短稿 (~3000 字) 约 20-40 分钟，长稿 (8000+ 字) 约 1-2 小时。
+纯文本 `.txt` 效果最好。从 Word 导出时建议去掉页眉、页脚、页码。Markdown `.md` 也支持。
+</details>
 
-**Q: 会改我的原文吗？**
-不会。原始文件不受影响。AI 生成独立的 `final_manuscript.md`，不确定的修改用 `[PLACEHOLDER:AQ-N]` 标记。
+<details>
+<summary><b>跑一次要多久？</b></summary>
 
-**Q: 可以中途停吗？**
-可以。每个 chunk 的审稿结果独立保存。下次告诉 AI 从哪一步继续。
+取决于稿件长度：
+- 短稿 (~3000 字)：约 20–40 分钟
+- 长稿 (8000+ 字)：约 1–2 小时
 
-**Q: 报 "skill not found"？**
-检查 `skills/` 在项目根目录下（不是 `.agent/` 里面），且每个子文件夹有 `SKILL.md`。
+主要耗时在 Step 3（逐块多轮审稿）。
+</details>
 
-**Q: Antigravity 对话的上下文用完了怎么办？**
+<details>
+<summary><b>会修改我的原文吗？</b></summary>
+
+不会。原始 `.txt` 文件完全不受影响。AI 生成独立的 `final_manuscript.md`，所有不确定的修改用 `[PLACEHOLDER:AQ-N]` 标记，等你在 `author_queries.md` 中确认。
+</details>
+
+<details>
+<summary><b>可以中途停下来吗？</b></summary>
+
+可以。每个 chunk 的审稿结果独立保存在 `chunk_X_review.md` 中。下次新开对话，输入 `/research` 并告诉 AI "从 Step X 继续"即可。
+</details>
+
+<details>
+<summary><b>报 "skill not found" 怎么办？</b></summary>
+
+检查两点：
+1. `skills/` 文件夹在**项目根目录**下（不是在 `.agent/` 里面）
+2. 每个 skill 子文件夹中有 `SKILL.md` 文件
+</details>
+
+<details>
+<summary><b>对话上下文用完了怎么办？</b></summary>
+
 长稿审稿可能消耗大量 token。如果对话被截断：
-1. 新开一个对话
-2. 告诉 AI：`/research`，从 Step X 继续，chunk 文件已在文件夹中
+1. 新开一个 Antigravity 对话
+2. 输入 `/research`，告诉 AI "从 Step X 继续，chunk 文件已在文件夹中"
 3. AI 会读取已有文件并接续流程
+</details>
+
+<details>
+<summary><b>适用于哪些学科？</b></summary>
+
+默认针对**物理/光学/材料**领域 + **Nature 系列期刊**优化。但通过调整目标期刊和 skill 检查清单，可适用于大部分实验科学领域。
+</details>
+
+---
+
+## License
+
+MIT
